@@ -1,0 +1,116 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div id="app" class="flex h-screen justify-center items-center">
+    <div class="recorder-container pr-16 border-r border-gray-300 items-center">
+        <div v-show="activeEffectWhileRecognizing">
+            <div class="outer"></div>
+            <div class="outer-2"></div>
+        </div>
+        <button @@click="startRecognizeOnceAsync" class="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-4 rounded-full shadow-lg focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mic"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+        </button>
+    </div>
+
+    <div class="ml-16 w-1/2 border border-gray-300 rounded py-2 px-6 shadow text-xl">
+        <ul>
+            <li v-for="speechResult in speechResults" class="flex flex-col py-3 border-b border-gray-200">
+                <span><label class="text-orange-600 font-bold">Request:</label> {{ speechResult.request }}</span>
+                <span><label class="text-green-500 font-bold">Response:</label> {{ speechResult.response }}</span>
+            </li>
+        </ul>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/axios@0.2.1/dist/axios.min.js"></script>
+<!-- Speech SDK reference sdk. -->
+<script src="~/js/sdk/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
+
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            speechSdk: null,
+            subscriptionKey: "91c500abae924b559ee3c062b3c3b6d1",
+            serviceRegion: "japaneast",
+
+            activeEffectWhileRecognizing: false,
+            speechResults: []
+        },
+        methods: {
+            startRecognizeOnceAsync() {
+                this.activeEffectWhileRecognizing = true
+
+                let speechConfig
+                let self = this
+
+                if (this.subscriptionKey === "") {
+                    alert("Please enter your Microsoft Cognitive Services Speech subscription key!")
+                    return
+                }
+
+                speechConfig = this.speechSdk.SpeechConfig.fromSubscription(this.subscriptionKey, this.serviceRegion)
+                speechConfig.speechRecognitionLanguage = "en-US"
+
+                let audioConfig = this.speechSdk.AudioConfig.fromDefaultMicrophoneInput()
+                let recognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig)
+
+                let object = {}
+                object['request'] = ""
+
+                recognizer.recognizeOnceAsync(
+                    function (result) {
+                        self.activeEffectWhileRecognizing = false
+
+                        object['request'] += result.text
+
+                        axios.get('?handler=SpeechResponse&speechRequest=' + object['request'] ).then(response => {
+                            object['response'] = response[0].responseText
+
+                            self.speechResults.push(object)
+                            self.readOutLoud(object['response'])
+
+                            recognizer.close()
+                            recognizer = undefined
+                        })
+                    },
+                    function (err) {
+                        self.activeEffectWhileRecognizing = false
+
+                        object['request'] += err
+                        object['response'] = "error response"
+
+                        self.speechResults.push(object)
+                        self.readOutLoud(object['response'])
+
+                        recognizer.close()
+                        recognizer = undefined
+                })
+
+            },
+
+            readOutLoud(message) {
+              let speech = new SpeechSynthesisUtterance()
+
+              speech.text = message
+              speech.volume = 1
+              speech.rate = 1
+              speech.pitch = 1
+
+              window.speechSynthesis.speak(speech)
+            }
+        },
+
+        created() {
+            if (!!window.SpeechSDK) {
+                this.speechSdk = window.SpeechSDK
+            }
+        }
+    })
+</script>
+}

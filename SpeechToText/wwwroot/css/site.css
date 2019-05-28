@@ -1,0 +1,64 @@
+﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
+for details on configuring this project to bundle and minify static web assets. */
+
+.recorder-container {
+  display: block;
+  cursor: default;
+  transition: .3s all ease-in;
+  position: relative;
+}
+
+.outer {
+  width: 72px;
+  height: 72px;
+  -webkit-transform: scale(1);
+  border-radius: 100%;
+  position: absolute;
+  background-color: transparent;
+  border: 1px solid #94a1a2;
+  z-index: -1;
+  transition: 1.5s all ease;
+  -webkit-animation: woong 1.5s infinite;
+}
+
+.outer-2 {
+  width: 72px;
+  height: 72px;
+  -webkit-transform: scale(1);
+  border-radius: 100%;
+  position: absolute;
+  background-color: #c8ced2;
+  z-index: -1;
+  transition: 1.5s all ease;
+  -webkit-animation: woong-2 1.5s infinite;
+  -webkit-animation-delay: 2.5s;
+}
+
+@-webkit-keyframes woong {
+   0% {
+     -webkit-trasform: scale(1.2);
+   }
+   50% {
+     -webkit-transform: scale(1.8);
+     opacity: 0.5;
+   }
+   100% {
+     -webkit-transform: scale(2.4);
+     opacity: 0;
+   }
+ }
+
+@-webkit-keyframes woong-2 {
+   0% {
+     -webkit-transform: scale(1.2);
+     opacity: 0.6;
+   }
+   50% {
+     -webkit-transform: scale(1.6);
+     opacity: 0.5;
+   }
+   100% {
+     -webkit-transform: scale(2);
+     opacity: 0;
+   }
+ }

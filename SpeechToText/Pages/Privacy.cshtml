@@ -1,0 +1,45 @@
+﻿@page
+@model PrivacyModel
+@{
+    ViewData["Title"] = "Privacy Policy";
+}
+<h1>@ViewData["Title"]</h1>
+
+<p>Use this page to detail your site's privacy policy.</p>
+
+<div id='app'>
+    @Html.AntiForgeryToken()
+    <div>
+        <h1>Count is: {{ count }}</h1>
+        <br>
+        <p>
+            <button v-on:click="incrementCount">Increment Count!</button>
+        </p>
+        <br>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios@0.2.1/dist/axios.min.js"></script>
+
+    <script>
+        var vueApp = new Vue({
+            el: '#app',
+            data: {
+                count: @Model.Count
+            },
+            methods: {
+                incrementCount: function () {
+                    this.count++;
+
+                    var headers = {
+                        "RequestVerificationToken": $('input:hidden[name="__RequestVerificationToken"]').val()
+                    }
+
+                    axios.post('/privacy?counter=' + this.count, null, { headers: headers })
+                }
+            }
+        })
+    </script>
+}
