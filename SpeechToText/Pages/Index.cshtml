@@ -15,18 +15,19 @@
         </button>
     </div>
 
-    <div class="ml-16 w-1/2 border border-gray-300 rounded py-2 px-6 shadow text-xl">
-        <ul>
-            <li v-for="speechResult in speechResults" class="flex flex-col py-3 border-b border-gray-200">
-                <span><label class="text-orange-600 font-bold">Request:</label> {{ speechResult.request }}</span>
-                <span><label class="text-green-500 font-bold">Response:</label> {{ speechResult.response }}</span>
-            </li>
-        </ul>
+    <div class="ml-16 border border-gray-300 rounded py-2 px-2 shadow text-xl">
+            <script type="text/javascript" src="//vhss-d.oddcast.com/fb_embed_functions_v3.php?acc=7087448&js=1&h=599&w=342&bc=&fs=1&ct=1&ss=2655425&sl=0&tr=1&min=0&eid=d8a51c9c4d421bca62dfcbd9d1b93da4&fv=0"></script>
+        @* <ul> *@
+        @*     <li v-for="speechResult in speechResults" class="flex flex-col py-3 border-b border-gray-200"> *@
+        @*         <span><label class="text-orange-600 font-bold">Request:</label> {{ speechResult.request }}</span> *@
+        @*         <span><label class="text-green-500 font-bold">Response:</label> {{ speechResult.response }}</span> *@
+        @*     </li> *@
+        @* </ul> *@
     </div>
 </div>
 
 @section Scripts {
-<script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
 <script src="https://unpkg.com/axios@0.2.1/dist/axios.min.js"></script>
 <!-- Speech SDK reference sdk. -->
 <script src="~/js/sdk/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
@@ -95,14 +96,9 @@
             },
 
             readOutLoud(message) {
-              let speech = new SpeechSynthesisUtterance()
-
-              speech.text = message
-              speech.volume = 1
-              speech.rate = 1
-              speech.pitch = 1
-
-              window.speechSynthesis.speak(speech)
+                setFacialExpression('Thinking"', 3, 6)
+                sayText(message,1,1,1)
+                 is3D()
             }
         },
 

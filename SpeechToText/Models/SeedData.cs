@@ -21,26 +21,38 @@ namespace SpeechToText.models
                 context.Speech.AddRange(
                     new Speech
                     {
-                        RequestText = "What are you doing now?",
-                        ResponseText = "I'm watching TV."
+                        RequestText = "Good afternoon. TBH Network Solutions.",
+                        ResponseText = "Yeah, hi. My system is down and I need to speak with a technician. "
                     },
 
                     new Speech
                     {
-                        RequestText = "What are you watching?",
-                        ResponseText = "I'm watching Friends. What are you doing?"
+                        RequestText = "Oh, okay. Let me gather some information and see if we can help. What is your first name? ",
+                        ResponseText = "Maria."
                     },
 
                     new Speech
                     {
-                        RequestText = "I'm doing my homework, but I really need to take a break.",
-                        ResponseText = "You want to do something?"
+                        RequestText = "And your last name; would you spell it for me please?",
+                        ResponseText = "It’s C-H-A-M-B- E-R-S, Chambers."
                     },
 
                     new Speech
                     {
-                        RequestText = "Yes. But I shouldn't. I got to finish my assignment now.",
-                        ResponseText = "Alright. Call me later then."
+                        RequestText = "Okay. And your company name? ",
+                        ResponseText = "I’m with GoldStar Environmental. "
+                    },
+
+                    new Speech
+                    {
+                        RequestText = "Okay. And your company name? ",
+                        ResponseText = "I’m with GoldStar Environmental. "
+                    },
+
+                    new Speech
+                    {
+                        RequestText = "Okay. And your callback number? ",
+                        ResponseText = "610-265-1715."
                     }
                 );
 
