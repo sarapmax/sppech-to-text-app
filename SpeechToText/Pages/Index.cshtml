@@ -16,13 +16,21 @@
     </div>
 
     <div class="ml-16 border border-gray-300 rounded py-2 px-2 shadow text-xl">
-            <script type="text/javascript" src="//vhss-d.oddcast.com/fb_embed_functions_v3.php?acc=7087448&js=1&h=599&w=342&bc=&fs=1&ct=1&ss=2655425&sl=0&tr=1&min=0&eid=d8a51c9c4d421bca62dfcbd9d1b93da4&fv=0"></script>
-        @* <ul> *@
-        @*     <li v-for="speechResult in speechResults" class="flex flex-col py-3 border-b border-gray-200"> *@
-        @*         <span><label class="text-orange-600 font-bold">Request:</label> {{ speechResult.request }}</span> *@
-        @*         <span><label class="text-green-500 font-bold">Response:</label> {{ speechResult.response }}</span> *@
-        @*     </li> *@
-        @* </ul> *@
+        <video id="video1" width="640" height="360" hidden>
+            <source type="video/mp4"> Your browser does not support playing this Video
+        </video>
+          <video id="video2" width="640" height="360" hidden>
+            	    <source type="video/mp4"> Your browser does not support playing this Video
+            </video>
+          <div>
+            <canvas id="myCanvas" width="640" height="360"></canvas>
+          </div>
+        <ul>
+            <li v-for="speechResult in speechResults" class="flex flex-col py-3 border-b border-gray-200">
+                <span><label class="text-orange-600 font-bold">Request:</label> {{ speechResult.request }}</span>
+                <span><label class="text-green-500 font-bold">Response:</label> {{ speechResult.response }}</span>
+            </li>
+        </ul>
     </div>
 </div>
 
@@ -35,14 +43,22 @@
 <script>
     new Vue({
         el: '#app',
+
         data: {
             speechSdk: null,
             subscriptionKey: "91c500abae924b559ee3c062b3c3b6d1",
             serviceRegion: "japaneast",
 
             activeEffectWhileRecognizing: false,
-            speechResults: []
+            speechResults: [],
+
+            video1: null,
+            video2: null,
+            timerID: null,
+            canvas: null,
+	    	ctx: null
         },
+
         methods: {
             startRecognizeOnceAsync() {
                 this.activeEffectWhileRecognizing = true
@@ -96,16 +112,90 @@
             },
 
             readOutLoud(message) {
-                setFacialExpression('Thinking"', 3, 6)
-                sayText(message,1,1,1)
-                 is3D()
-            }
+				let speech = new SpeechSynthesisUtterance()
+
+				this.stopTimer()
+				this.video2[0].pause();
+				this.video1[0].play();
+
+				speech.text = message
+				speech.volume = 1
+				speech.rate = 1
+				speech.pitch = 1
+
+				window.speechSynthesis.speak(speech)
+
+				speech.onend = (event) => {
+					event.preventDefault()
+
+					this.stopTimer()
+
+					this.video1[0].pause();
+					this.video2[0].play();
+                };
+            },
+
+			onVideoEnd() {
+				//stop copying frames to canvas for the current video element
+				this.stopTimer()
+
+				this.video2[0].play()
+			},
+
+			drawImage(video) {
+				//last 2 params are video width and height
+				this.ctx.drawImage(video, 0, 0, 640, 360);
+			},
+
+			stopTimer() {
+				window.clearInterval(this.timerID);
+			},
+
+	    	playVideoOnPromise() {
+            	const playPromise = this.video2[0].play();
+
+				if (playPromise !== null){
+					this.stopTimer()
+					playPromise.catch(() => { this.video2[0].play(); })
+				}
+	    	}
         },
 
+        mounted() {
+            this.video1 = $("#video1")
+            this.video2 = $("#video2")
+
+            this.canvas = $("#myCanvas")
+            this.ctx = this.canvas[0].getContext("2d")
+
+			this.video1.attr("src", "../content/talking-avatar-video.mp4");
+			this.video2.attr("src", "../content/still-avatar-video.mp4");
+
+			// copy the 1st video frame to canvas as soon as it is loaded
+			this.video1.one("loadeddata", () => {
+				this.drawImage(this.video1[0]);
+			});
+
+			this.video1.on("play", () => {
+				this.timerID = window.setInterval(() => {
+					this.drawImage(this.video1[0]);
+				}, 30);
+			});
+
+			this.video2.on("play", () => {
+				this.timerID = window.setInterval(() => {
+					this.drawImage(this.video2[0]);
+				}, 30);
+			});
+
+			this.playVideoOnPromise()
+			// this.video1.on("ended", this.onVideoEnd);
+		},
+
         created() {
-            if (!!window.SpeechSDK) {
-                this.speechSdk = window.SpeechSDK
-            }
+			if (!!window.SpeechSDK) {
+				this.speechSdk = window.SpeechSDK
+			}
         }
     })
 </script>
