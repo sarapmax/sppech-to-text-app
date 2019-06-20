@@ -11,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SpeechToText.Models;
+using SpeechToText.Services;
+using SpeechToText.Services.Interfaces;
 
 namespace SpeechToText
 {
@@ -46,6 +48,8 @@ namespace SpeechToText
 
             services.AddDbContext<SpeechToTextContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("SpeechToTextContext")));
+
+            services.AddTransient<ITextToSpeech, TextToSpeechService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

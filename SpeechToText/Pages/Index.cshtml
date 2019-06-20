@@ -25,12 +25,12 @@
           <div>
             <canvas id="myCanvas" width="640" height="360"></canvas>
           </div>
-        <ul>
-            <li v-for="speechResult in speechResults" class="flex flex-col py-3 border-b border-gray-200">
-                <span><label class="text-orange-600 font-bold">Request:</label> {{ speechResult.request }}</span>
-                <span><label class="text-green-500 font-bold">Response:</label> {{ speechResult.response }}</span>
-            </li>
-        </ul>
+        @* <ul> *@
+        @*     <li v-for="speechResult in speechResults" class="flex flex-col py-3 border-b border-gray-200"> *@
+        @*         <span><label class="text-orange-600 font-bold">Request:</label> {{ speechResult.request }}</span> *@
+        @*         <span><label class="text-green-500 font-bold">Response:</label> {{ speechResult.response }}</span> *@
+        @*     </li> *@
+        @* </ul> *@
     </div>
 </div>
 
@@ -38,7 +38,8 @@
     <script src="https://unpkg.com/vue/dist/vue.js"></script>
 <script src="https://unpkg.com/axios@0.2.1/dist/axios.min.js"></script>
 <!-- Speech SDK reference sdk. -->
-<script src="~/js/sdk/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
+    <script src="~/js/sdk/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.1.1/howler.min.js"></script>
 
 <script>
     new Vue({
@@ -56,7 +57,9 @@
             video2: null,
             timerID: null,
             canvas: null,
-	    	ctx: null
+	    	ctx: null,
+
+	    	token: "@Model.Token",
         },
 
         methods: {
@@ -90,7 +93,7 @@
                             object['response'] = response[0].responseText
 
                             self.speechResults.push(object)
-                            self.readOutLoud(object['response'])
+                            self.readText(object['response'])
 
                             recognizer.close()
                             recognizer = undefined
@@ -103,7 +106,7 @@
                         object['response'] = "error response"
 
                         self.speechResults.push(object)
-                        self.readOutLoud(object['response'])
+                        self.readText(object['response'])
 
                         recognizer.close()
                         recognizer = undefined
@@ -111,28 +114,22 @@
 
             },
 
-            readOutLoud(message) {
-				let speech = new SpeechSynthesisUtterance()
+            readText(message) {
+				new Howl({
+					src: [`?handler=Translate&content='${message}&token=${this.token}`],
+					format: ['mp3'],
+					onplay: () => {
+						this.stopTimer()
+						this.video2[0].pause();
+						this.video1[0].play();
+					},
+					onend: () => {
+						this.video2[0].play();
+						this.video1[0].pause();
 
-				this.stopTimer()
-				this.video2[0].pause();
-				this.video1[0].play();
-
-				speech.text = message
-				speech.volume = 1
-				speech.rate = 1
-				speech.pitch = 1
-
-				window.speechSynthesis.speak(speech)
-
-				speech.onend = (event) => {
-					event.preventDefault()
-
-					this.stopTimer()
-
-					this.video1[0].pause();
-					this.video2[0].play();
-                };
+						this.stopTimer()
+					}
+				}).play();
             },
 
 			onVideoEnd() {
@@ -179,7 +176,7 @@
 			this.video1.on("play", () => {
 				this.timerID = window.setInterval(() => {
 					this.drawImage(this.video1[0]);
-				}, 30);
+				}, 10);
 			});
 
 			this.video2.on("play", () => {
