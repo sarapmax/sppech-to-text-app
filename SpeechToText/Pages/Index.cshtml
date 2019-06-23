@@ -16,10 +16,10 @@
     </div>
 
     <div class="ml-16 border border-gray-300 rounded py-2 px-2 shadow text-xl">
-        <video id="video1" width="640" height="360" hidden>
+        <video id="video1" width="640" height="360" hidden muted>
             <source type="video/mp4"> Your browser does not support playing this Video
         </video>
-          <video id="video2" width="640" height="360" hidden>
+          <video id="video2" width="640" height="360" hidden muted>
             	    <source type="video/mp4"> Your browser does not support playing this Video
             </video>
           <div>
@@ -36,8 +36,8 @@
 
 @section Scripts {
     <script src="https://unpkg.com/vue/dist/vue.js"></script>
-<script src="https://unpkg.com/axios@0.2.1/dist/axios.min.js"></script>
-<!-- Speech SDK reference sdk. -->
+	<script src="https://unpkg.com/axios@0.2.1/dist/axios.min.js"></script>
+	<!-- Speech SDK reference sdk. -->
     <script src="~/js/sdk/microsoft.cognitiveservices.speech.sdk.bundle-min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.1.1/howler.min.js"></script>
 
@@ -92,11 +92,18 @@
                         axios.get('?handler=SpeechResponse&speechRequest=' + object['request'] ).then(response => {
                             object['response'] = response[0].responseText
 
-                            self.speechResults.push(object)
-                            self.readText(object['response'])
+							let voice = new Howl({
+								src: [`?handler=Translate&content='${object['response']}&token=${self.token}`],
+								format: ['mp3'],
+								onload: () => {
+									self.speechResults.push(object)
+									self.readText(object['response'], voice.duration())
 
-                            recognizer.close()
-                            recognizer = undefined
+									recognizer.close()
+									recognizer = undefined
+								}
+							})
+
                         })
                     },
                     function (err) {
@@ -114,22 +121,30 @@
 
             },
 
-            readText(message) {
-				new Howl({
+            readText(message, duration) {
+				let speech = new Howl({
 					src: [`?handler=Translate&content='${message}&token=${this.token}`],
 					format: ['mp3'],
+					sprite: {'blast': [0, (duration * 1000) - 800]},
 					onplay: () => {
 						this.stopTimer()
 						this.video2[0].pause();
 						this.video1[0].play();
+
+						console.log('speech starts')
 					},
 					onend: () => {
 						this.video2[0].play();
 						this.video1[0].pause();
 
 						this.stopTimer()
+
+						console.log('speech ends')
+					},
+					onload: () => {
+						speech.play('blast')
 					}
-				}).play();
+				})
             },
 
 			onVideoEnd() {
@@ -165,8 +180,8 @@
             this.canvas = $("#myCanvas")
             this.ctx = this.canvas[0].getContext("2d")
 
-			this.video1.attr("src", "../content/talking-avatar-video.mp4");
-			this.video2.attr("src", "../content/still-avatar-video.mp4");
+			this.video1.attr("src", "../content/talking-avatar-video-2.mp4");
+			this.video2.attr("src", "../content/still-avatar-video-2.mp4");
 
 			// copy the 1st video frame to canvas as soon as it is loaded
 			this.video1.one("loadeddata", () => {
